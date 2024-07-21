@@ -1,0 +1,1 @@
+Simple hash table implementation in Rust. Written for use with my crafting interpeters tutorial implementation. Named tremor because the night I made this, I accidentally had so much Caffeine that my hands were literally shaking.
