@@ -17,15 +17,28 @@ mod tests {
 
         s
     }
-/*
-    struct BadHashObject {
-        hash_val: u64
+
+    //Hash function is implemented as to deliberately
+    //create collisions 
+    #[derive(PartialEq, Debug, Eq, Clone)]
+    struct BadHashObject<T> {
+        hash_val: u64,
+        val: T,
     }
 
-    impl Hash for BadHashObject {
-
+    impl<T: Default> BadHashObject<T> {
+        fn new() -> Self {
+            BadHashObject{ hash_val: 0, val: T::default() }
+        }
     }
-*/
+    
+    impl<T> Hash for BadHashObject<T> {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            self.hash_val.hash(state);
+        }
+    }
+   
+
     #[test]
     fn normal() {
         let mut hash_table = HashTable::new(); 
@@ -33,34 +46,78 @@ mod tests {
         hash_table.insert("album".to_string(), "https://open.spotify.com/album/1PQDjdBpHPikAodJqjzm6a".to_string());
         hash_table.insert("SSN".to_string(), "574-48-6969".to_string());
 
-        for i in 0..100 {
+        for _ in 0..20 {
             hash_table.insert(rand_string(), rand_string());
         }
 
-        println!("{:?}", hash_table.search("greeting".to_string()));
+        println!("{:?}", hash_table.get_mut("greeting".to_string()));
 
-        assert_eq!(hash_table.search("greeting".to_string()), Some(&mut "hello world!".to_string()));
-        assert_eq!(hash_table.search("album".to_string()), Some(&mut "https://open.spotify.com/album/1PQDjdBpHPikAodJqjzm6a".to_string()));
-        assert_eq!(hash_table.search("SSN".to_string()), Some(&mut "574-48-6969".to_string()));
+        assert_eq!(hash_table.get_mut("greeting".to_string()), Some(&mut "hello world!".to_string()));
+        assert_eq!(hash_table.get_mut("album".to_string()), Some(&mut "https://open.spotify.com/album/1PQDjdBpHPikAodJqjzm6a".to_string()));
+        assert_eq!(hash_table.get_mut("SSN".to_string()), Some(&mut "574-48-6969".to_string()));
 
         //shouldn't have been stored there in the first place...
         hash_table.remove("SSN".to_string());
-        assert_eq!(hash_table.search("SSN".to_string()), None);
+        assert_eq!(hash_table.get_mut("SSN".to_string()), None);
+    }
+
+    #[test]
+    fn collision_handle() {
+        let mut hash_table = HashTable::new(); 
+
+        //Work around for initializing array of non copyable objects
+        let mut keys = [(); 10].map(|_| Option::<BadHashObject<String>>::default()); 
+
+        for i in 0..10 {
+            keys[i] = Some(BadHashObject { hash_val: 0, val: i.to_string() });
+            hash_table.insert(keys[i].clone(), i);
+        }
+
+        assert_eq!(hash_table.get_mut(keys[9].clone()), Some(&mut 9)); 
+        assert_eq!(hash_table.get_mut(keys[1].clone()), Some(&mut 1)); 
+
+        for i in 1..9 {
+            hash_table.remove(keys[i].clone());
+        }
+
+        assert_eq!(hash_table.get_mut(keys[0].clone()), Some(&mut 0)); 
+        assert_eq!(hash_table.get_mut(keys[1].clone()), None); 
+        assert_eq!(hash_table.get_mut(keys[5].clone()), None); 
+        assert_eq!(hash_table.get_mut(keys[9].clone()), Some(&mut 9)); 
     }
 }
 
 mod tremor {
+
     use super::*;
     use Cell::*;
     use crate::DefaultHasher;
     use crate::Hash;
     use crate::Hasher;
 
+
+    macro_rules! get_cell {
+        ($self:expr, $key:expr, $($borrow:tt)+) => {
+            let initial_idx = $self.get_idx(&$key);
+            let mut idx = initial_idx;
+            loop {
+                match $($borrow)+ $self.cells[idx] {
+                    Filled(entry) if entry.key == $key => return Some($($borrow)+ $self.cells[idx]),
+                    Filled(_) | Removed => {},
+                    Empty => return None,
+                }
+                idx = (idx + 1) % $self.cells.len();
+            }
+        };
+    }
+
     #[derive(Clone, PartialEq)]
-    struct Entry<K, V> {
+    pub struct Entry<K, V> {
         key: K,
         value: V,
     }
+
+
 
     impl<K, V> Entry<K, V> {
         fn new(key: K, value: V) -> Self {
@@ -69,19 +126,17 @@ mod tremor {
     }
 
     #[derive(Clone, PartialEq)]
-    enum Cell<K, V> {
+    pub enum Cell<K, V> {
         Filled(Entry<K, V>),
         Empty,
         Removed,
     }
 
-    impl<K, V> Default for Cell<K, V> {
-        fn default() -> Self { Empty } 
-    }
 
     pub struct HashTable<K, V> {
         cells: Vec<Cell<K, V>>,
         num_entries: usize,
+
     }
 
     impl<K, V> HashTable<K, V> 
@@ -100,34 +155,37 @@ mod tremor {
             }
         }
 
-        fn get_idx(&mut self, key: &K) -> usize {
+        fn get_cell(&self, key: K) -> Option<&Cell<K, V>> {
+            get_cell!(self, key, &);
+        }
+
+        fn get_cell_mut(&mut self, key: K) -> Option<&mut Cell<K, V>> {
+            get_cell!(self, key, &mut);
+        }
+
+
+        fn get_idx(&self, key: &K) -> usize {
             let mut hasher = DefaultHasher::new();
             key.hash(&mut hasher); 
             hasher.finish() as usize % self.cells.len()
         }
 
-        pub fn get_cell(&mut self, key: K) -> Option<&mut Cell<K, V>> {
-            let initial_idx = self.get_idx(&key);
-            let mut idx = initial_idx; 
-
-            loop {
-                match self.cells[idx] {
-                    Filled(ref mut entry) => {
-                        if entry.key == key {
-                            return Some(&mut self.cells[idx]);
-                        }
-                    },
-                    Removed => {},
-                    Empty => { return None; }
-                }
-                idx += 1;
-                if idx == self.cells.len() { idx = 0; }
+        pub fn get(&self, key: K) -> Option<&V> {
+            match self.get_cell(key) {
+                Some(Filled(cell)) => Some(&cell.value),
+                _ => None,
             }
-        }
+        } 
 
-
+        pub fn get_mut(&mut self, key: K) -> Option<&mut V> {
+            match self.get_cell_mut(key) {
+                Some(Filled(cell)) => Some(&mut cell.value),
+                _ => None,
+            }
+        } 
+        
         fn resize(&mut self) {
-            panic!("Don't feel like implementing");
+            panic!("Too lazy to implement");
         }
 
         pub fn insert(&mut self, key: K, value: V) {
@@ -146,7 +204,7 @@ mod tremor {
         }
 
         pub fn remove(&mut self, key: K) -> Option<V> {
-            let mut cell = self.get_cell(key);
+            let mut cell = self.get_cell_mut(key);
 
             match cell {
                 Some(Filled(_)) => {
@@ -158,27 +216,6 @@ mod tremor {
             }
         }
 
-        pub fn search(&mut self, key: K) -> Option<&mut V> {
-            if let Some(Filled(cell)) = self.get_cell(key) {
-                Some(&mut cell.value)
-            } else {
-                None
-            } 
-        } 
     }
 }
-
-
-            /*
-            match cell {
-                Some(Filled(_)) => {
-                    unsafe { 
-                        let Filled(entry) = mem::take(cell.unwrap()) else { unreachable!() };
-                        *cell.unwrap() = Removed;
-                        self.num_entries -= 1;
-                        Some(entry.value)
-                    }
-                },
-                _ => None,
-            }*/
 
