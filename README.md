@@ -6,4 +6,4 @@ Named tremor because the night I made this, I accidentally had so much Coffee th
 </details>
 
 *Me when I started writing this:*
-![shaking-hands.gif]
+![./shaking-hands.gif]
