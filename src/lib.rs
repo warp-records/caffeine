@@ -19,7 +19,7 @@ macro_rules! get_cell {
 }
 
 #[derive(Clone, PartialEq)]
-struct Entry<K, V> {
+pub struct Entry<K, V> {
     key: K,
     value: V,
 }
@@ -35,9 +35,13 @@ impl<K, V> Entry<K, V> {
 
 #[derive(Clone, PartialEq)]
 pub enum Cell<K, V> {
-    Filled(Entry<K, V>),
     Empty,
+    Filled(Entry<K, V>),
     Removed,
+}
+
+impl<K, V> Default for Cell<K, V> {
+    fn default() -> Cell<K, V> { Empty }
 }
 
 pub struct HashTable<K, V> {
@@ -50,7 +54,7 @@ where
     K: Hash + Eq + Clone,
     V: Clone + PartialEq,
 {
-    const START_SIZE: usize = 256; //256 just seems like a cool number
+    const START_SIZE: usize = 256;//256 just seems like a cool number
     const MAX_LOAD_FACTOR: f32 = 0.5;
 
     pub fn new() -> Self {
@@ -58,6 +62,11 @@ where
             cells: vec![Empty; Self::START_SIZE],
             num_entries: 0,
         }
+    }
+
+    pub fn clear(&mut self) {
+        self.cells.clear();
+        self.num_entries = 0;
     }
 
     fn get_cell(&self, key: K) -> Option<&Cell<K, V>> {
@@ -89,7 +98,16 @@ where
     }
 
     fn resize(&mut self) {
-        panic!("Too lazy to implement");
+        let mut old_cells = std::mem::take(&mut self.cells);
+        //allocate twice as much memory as before
+        self.cells = Vec::with_capacity(old_cells.len()*2);
+        self.cells.resize(self.cells.capacity(), Empty);
+        
+        for cell in old_cells {
+            if let Filled(entry) = cell {
+                self.insert(entry.key, entry.value);
+            }
+        }
     }
 
     pub fn insert(&mut self, key: K, value: V) {
@@ -110,7 +128,7 @@ where
     }
 
     pub fn remove(&mut self, key: K) -> Option<V> {
-        let mut cell = self.get_cell_mut(key);
+        let cell = self.get_cell_mut(key);
 
         match cell {
             Some(Filled(_)) => {
@@ -121,4 +139,44 @@ where
             _ => None,
         }
     }
+
+    pub fn iter(&self) -> HashTableIter<K, V> {
+        HashTableIter {
+            hash_table: &self,
+            idx: 0,
+        }
+    }
+
 }
+
+pub struct HashTableIter<'a, K, V> {
+    pub hash_table: &'a HashTable<K, V>,
+    idx: usize,
+}
+
+impl<'a, K, V> Iterator for HashTableIter<'a, K, V> {
+    type Item = (&'a K, &'a V);
+
+    fn next(&mut self) -> Option<(&'a K, &'a V)> {
+
+        while self.idx < self.hash_table.cells.len() {
+
+            if let Filled(entry) = &self.hash_table.cells[self.idx] {
+                self.idx = self.idx + 1;
+                return Some((&entry.key, &entry.value));
+            }
+
+            self.idx = self.idx + 1;
+        }
+
+        None 
+    }
+}
+
+/*
+impl IntoIterator for HashTable {
+    fn into_iter() -> {
+
+    }
+}
+*/

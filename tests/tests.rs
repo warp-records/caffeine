@@ -1,7 +1,7 @@
 
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::mem;
-
+use rand::prelude::*;
 use tremor;
 
 #[cfg(test)]
@@ -102,6 +102,28 @@ mod tests {
         assert_eq!(hash_table.get_mut(keys[1].clone()), None);
         assert_eq!(hash_table.get_mut(keys[5].clone()), None);
         assert_eq!(hash_table.get_mut(keys[9].clone()), Some(&mut 9));
+    }
+
+    fn resize() {
+    	todo!();
+    }
+
+    #[test]
+    fn iterators() {
+    	let mut hash_table = HashTable::new();
+    	let mut rng = rand::thread_rng();
+
+        for _ in 0..20 {
+        	let val = rng.gen::<usize>();
+            hash_table.insert(val, val-1);
+        }
+
+        let mut iter = hash_table.iter();
+
+		while let Some(entry) = iter.next() { 
+    		assert_eq!(*entry.0, entry.1+1);	
+    	}
+
     }
 }
 
