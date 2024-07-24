@@ -2,7 +2,7 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::mem;
 use rand::prelude::*;
-use tremor;
+use caffeine_;
 
 #[cfg(test)]
 mod tests {
