@@ -1,7 +1,9 @@
 [package]
-name = "tremor"
+name = "caffeine"
 version = "0.1.0"
 edition = "2021"
+description = "Simple hash table implementation using open addressing. Written for use with my crafting interpeters tutorial implementation."
+license = "MIT"
 
 [dependencies]
 rand = "0.8.5"
