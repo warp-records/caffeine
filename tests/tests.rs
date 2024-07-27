@@ -2,12 +2,15 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::mem;
 use rand::prelude::*;
-use caffeine_;
+use caffeine;
+
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tremor::HashTable;
+    //see if there's a way to do this without requiring
+    //::hash_map
+    use caffeine::hash_map::HashMap;
 
     use rand::{distributions::Alphanumeric, Rng};
     fn rand_string() -> String {
@@ -45,7 +48,7 @@ mod tests {
 
     #[test]
     fn normal() {
-        let mut hash_table = HashTable::new();
+        let mut hash_table = HashMap::new();
 
         hash_table.insert("greeting".to_string(), "hello world!".to_string());
         hash_table.insert(
@@ -78,7 +81,7 @@ mod tests {
 
     #[test]
     fn collision_handle() {
-        let mut hash_table = HashTable::new();
+        let mut hash_table = HashMap::new();
 
         //Work around for initializing array of non copyable objects
         let mut keys = [(); 10].map(|_| Option::<BadHashObject<String>>::default());
@@ -110,7 +113,7 @@ mod tests {
 
     #[test]
     fn iterators() {
-    	let mut hash_table = HashTable::new();
+    	let mut hash_table = HashMap::new();
     	let mut rng = rand::thread_rng();
 
         for _ in 0..20 {
