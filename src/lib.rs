@@ -1,2 +1,3 @@
 
 pub mod hash_map;
+pub mod bloom_filter;
