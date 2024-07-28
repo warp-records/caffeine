@@ -47,7 +47,7 @@ mod tests {
     }
 
     #[test]
-    fn normal() {
+    fn hashmap_normal() {
         let mut hash_table = HashMap::new();
 
         hash_table.insert("greeting".to_string(), "hello world!".to_string());
@@ -80,7 +80,7 @@ mod tests {
     }
 
     #[test]
-    fn collision_handle() {
+    fn hashmap_collision_handle() {
         let mut hash_table = HashMap::new();
 
         //Work around for initializing array of non copyable objects
@@ -112,7 +112,7 @@ mod tests {
     }
 
     #[test]
-    fn iterators() {
+    fn hashmap_iterators() {
     	let mut hash_table = HashMap::new();
     	let mut rng = rand::thread_rng();
 
@@ -127,6 +127,11 @@ mod tests {
     		assert_eq!(*entry.0, entry.1+1);	
     	}
 
+    }
+
+    #[test]
+    fn bloomfilter() {
+        //
     }
 }
 

@@ -1,26 +1,41 @@
 
+use std::hash::{DefaultHasher, Hash, Hasher};
 
-
-//T = element type, M = num bits
-struct BloomFilter<T, const M: usize> {
+//Note, this bloom filter is HETEROGENOUS
+struct BloomFilter<const M: usize> {
 	bit_array: [bool; M],
 	num_hashes: usize,	
-	phantom: Option<T>,
 }
 
-impl<T, const M: usize> BloomFilter<T, M> {
+impl<const M: usize> BloomFilter<M> {
 
-	fn new(num_hashes: usize) -> Self {
-		BloomFilter::<T, M> {
+	fn new<T: Hash>(num_hashes: usize) -> Self {
+		BloomFilter::<M> {
 			bit_array: [false; M],
 			num_hashes: num_hashes,
-			phantom: None,
 		}
 	}
 
-	fn insert(elem: &T) { todo!(); }
+	fn insert<T: Hash>(&mut self, elem: &T) { 
+		for i in 0..self.num_hashes {
+			let mut hasher = DefaultHasher::new();
+			elem.hash(&mut hasher);
+			hasher.write_usize(i);
 
-	fn must_contain(elem: &T) -> bool { todo!(); } 
+			self.bit_array[hasher.finish() as usize % M] = true;
+		}
+	}
 
-	fn hash_item(elem: &T) -> usize { todo!(); } 
+	fn must_contain<T: Hash>(&self, elem: &T) -> bool { 
+		for i in 0..self.num_hashes {
+			let mut hasher = DefaultHasher::new();
+			elem.hash(&mut hasher);
+			hasher.write_usize(i);
+
+			if !self.bit_array[hasher.finish() as usize % M] { return false; } 
+		}
+
+		true
+	} 
+
 }
