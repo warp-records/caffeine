@@ -131,9 +131,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(non_snake_case)]
-    fn bloomfilter() {
-
+    fn bloomfilter_search() {
         let mut bloom_filter = BloomFilter::<&str, 1024>::new(5);
         //they really are that terrible
         let test_sentence = "AJR are a god awful fucking band"; 
@@ -145,7 +143,13 @@ mod tests {
         for word in test_sentence.split_whitespace() {
             assert!(bloom_filter.search(&word)); 
         }
-        
+
+    }
+
+    #[test]
+    #[allow(non_snake_case)]
+    fn bloomfilter_k_bench() {
+
         let test_sentence = "I'm listening to \"Terminal Z\" by Skee Mask and it's
         honestly stunning. It's a very futuristic spacey sounding atmospheric ambient,
         with lush synths and detuned wacky sounding effects. Touching music truly is 
@@ -194,5 +198,20 @@ mod tests {
         assert!(false_positives.2 <= false_positives.0);
         assert!(false_positives.2 <= false_positives.1);
     }
+
+
+
+    #[test]
+    fn mass_insert() {
+     let mut bf = BloomFilter::<usize, 1024>::new(10);
+        for i in 0..700_000 {
+            bf.insert(&i);
+        }
+
+        for i in 0..700_000 {
+            bf.search(&i);
+        }
+    }
+    
 }
 
