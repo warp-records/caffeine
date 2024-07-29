@@ -1,5 +1,5 @@
 [package]
-# I CAN'T BELIEVE I OWN THE CAFFEINE CRATE!!!!
+# I CAN'T BELIEVE I OWN THE CAFFEINE CRATE!!!! I feel so cool
 name = "caffeine"
 version = "0.1.1"
 edition = "2021"
@@ -10,7 +10,6 @@ license = "MIT"
 rand = "0.8.5"
 
 # It's pretty fitting that I own this crate bc I am
-# a literal junkie for Caffeine, like I fiend for it harder
-# than I do for Adderall and I used to snort Caffeine pills
+# a literal junkie for Caffeine
 
 # Hope you have fun using my crate!

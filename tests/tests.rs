@@ -11,6 +11,7 @@ mod tests {
     //see if there's a way to do this without requiring
     //::hash_map
     use caffeine::hash_map::HashMap;
+    use caffeine::bloom_filter::BloomFilter;
 
     use rand::{distributions::Alphanumeric, Rng};
     fn rand_string() -> String {
@@ -130,8 +131,68 @@ mod tests {
     }
 
     #[test]
+    #[allow(non_snake_case)]
     fn bloomfilter() {
-        //
+
+        let mut bloom_filter = BloomFilter::<&str, 1024>::new(5);
+        //they really are that terrible
+        let test_sentence = "AJR are a god awful fucking band"; 
+        
+        for word in test_sentence.split_whitespace() {
+            bloom_filter.insert(&word); 
+        }
+
+        for word in test_sentence.split_whitespace() {
+            assert!(bloom_filter.search(&word)); 
+        }
+        
+        let test_sentence = "I'm listening to \"Terminal Z\" by Skee Mask and it's
+        honestly stunning. It's a very futuristic spacey sounding atmospheric ambient,
+        with lush synths and detuned wacky sounding effects. Touching music truly is 
+        one of the most precious things in life.";
+
+        let NUM_ELEMENTS: usize = test_sentence.split_whitespace().count();
+        const NUM_CELLS: usize = 512;
+        //k = (m/n)*ln(2)
+        let OPTIMAL_K: usize = 
+            (NUM_CELLS as f32 / NUM_ELEMENTS as f32 * 0.69314718056) as usize;
+        let LOW_K: usize = OPTIMAL_K*2;
+        let HIGH_K: usize = OPTIMAL_K / 2;
+        
+        
+        let mut more_hashes = BloomFilter::<&str, NUM_CELLS>::new(HIGH_K);
+        let mut less_hashes = BloomFilter::<&str, NUM_CELLS>::new(LOW_K); 
+        let mut optimal_hashes = BloomFilter::<&str, NUM_CELLS>::new(OPTIMAL_K);
+
+        for word in test_sentence.split_whitespace() {
+            more_hashes.insert(&word);
+            less_hashes.insert(&word);
+            optimal_hashes.insert(&word);
+        }
+
+        let mut false_positives = (0, 0, 0);
+
+        for _ in 0..100_000 {
+            let word = &rand_string()[..];
+
+            if less_hashes.search(&word) {
+                false_positives.0 = false_positives.0 + 1 
+            }
+
+            if more_hashes.search(&word) {
+                false_positives.1 = false_positives.1 + 1 
+            }
+
+            if optimal_hashes.search(&word) {
+                false_positives.2 = false_positives.2 + 1 
+            }
+        }
+
+        println!("{} hash bloom filter false positives: {}", LOW_K, false_positives.0);
+        println!("{} hash false positives: {}", HIGH_K, false_positives.1);
+        println!("optimal {} hash false positives: {}", OPTIMAL_K, false_positives.2);
+        assert!(false_positives.2 <= false_positives.0);
+        assert!(false_positives.2 <= false_positives.1);
     }
 }
 

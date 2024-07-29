@@ -1,22 +1,25 @@
 
 use std::hash::{DefaultHasher, Hash, Hasher};
+use std::marker::PhantomData;
 
-//Note, this bloom filter is HETEROGENOUS
-struct BloomFilter<const M: usize> {
+pub struct BloomFilter<T, const M: usize> {
 	bit_array: [bool; M],
 	num_hashes: usize,	
+	//necessary to enforce homogenuity
+	phantom_data: PhantomData<T>
 }
 
-impl<const M: usize> BloomFilter<M> {
+impl<T: Hash, const M: usize> BloomFilter<T, M> {
 
-	fn new<T: Hash>(num_hashes: usize) -> Self {
-		BloomFilter::<M> {
+	pub fn new(num_hashes: usize) -> Self {
+		BloomFilter::<T, M> {
 			bit_array: [false; M],
 			num_hashes: num_hashes,
+			phantom_data: PhantomData,
 		}
 	}
 
-	fn insert<T: Hash>(&mut self, elem: &T) { 
+	pub fn insert(&mut self, elem: &T) { 
 		for i in 0..self.num_hashes {
 			let mut hasher = DefaultHasher::new();
 			elem.hash(&mut hasher);
@@ -26,7 +29,7 @@ impl<const M: usize> BloomFilter<M> {
 		}
 	}
 
-	fn must_contain<T: Hash>(&self, elem: &T) -> bool { 
+	pub fn search(&self, elem: &T) -> bool { 
 		for i in 0..self.num_hashes {
 			let mut hasher = DefaultHasher::new();
 			elem.hash(&mut hasher);
@@ -37,5 +40,4 @@ impl<const M: usize> BloomFilter<M> {
 
 		true
 	} 
-
 }
