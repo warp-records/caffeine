@@ -12,6 +12,7 @@ mod tests {
     //::hash_map
     use caffeine::hash_map::HashMap;
     use caffeine::bloom_filter::BloomFilter;
+    use caffeine::heap::Heap;
 
     use rand::{distributions::Alphanumeric, Rng};
     fn rand_string() -> String {
@@ -212,6 +213,11 @@ mod tests {
             bf.search(&i);
         }
     }
+
+    //#[test]
+    //fn init_heap() {
+    //    let mut heap = Heap<usize>::new();
+    //}
     
 }
 
