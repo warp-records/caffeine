@@ -1,5 +1,5 @@
 
-use caffeine::hash_map::HashMap;
+use crate::hash_map::HashMap;
 
 pub struct Trie {
 	root: TrieNode,
@@ -27,32 +27,37 @@ struct TrieNode {
 
 impl TrieNode {
 	fn new() -> Self {
-		TrieNode { root: HashMap::new(), tail: false }
+		TrieNode { children: HashMap::new(), is_tail: false }
 	}
 
 	fn insert(&mut self, slice: &str) {
-		let ch = slice.as_bytes()[0];
+		let ch = slice.as_bytes()[0] as char;
 
-		let mut node = match self.children.get_mut(ch) {
-			Some(&mut node) => &mut node,
-			None => &mut self.children.insert(ch, TrieNode::new()),
+		let node = match self.children.get_mut(ch) {
+			Some(node) => node,
+			None => self.children.insert(ch, TrieNode::new()),
 		};
 
 		if slice.len() == 1 {
 			node.is_tail = true;
 		} else {
-			node.insert(slice.as_bytes([1..slice.len()]));
+			node.insert(&slice[1..slice.len()]);
 		} 
 	} 
 
 	fn search(&self, slice: &str) -> bool {
-		if slice.len() == 0 { return true; }
-
-		let ch = slice.as_bytes()[0];
+		let ch = slice.as_bytes()[0] as char;
 
 		match self.children.get(ch) {
-			Some(node) => node.search(slice.as_bytes([1..slice.len()])),
+			Some(node) => {
+				if slice.len() == 1 {
+					return self.is_tail
+				} else {
+					node.search(&slice[1..slice.len()])
+				}
+			},
 			None => false,
 		}
 	}
 }
+

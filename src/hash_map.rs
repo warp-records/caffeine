@@ -104,7 +104,7 @@ where
     }
 
     fn resize(&mut self) {
-        let mut old_cells = std::mem::take(&mut self.cells);
+        let old_cells = std::mem::take(&mut self.cells);
         //allocate twice as much memory as before
         self.cells = std::iter::repeat_with(|| Empty)
             .take(old_cells.len()*2)
