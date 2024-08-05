@@ -19,7 +19,7 @@ macro_rules! get_cell {
 }
 
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub struct Entry<K, V> {
     key: K,
     value: V,
@@ -34,7 +34,7 @@ impl<K, V> Entry<K, V> {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone)]
 pub enum Cell<K, V> {
     Empty,
     Filled(Entry<K, V>),
@@ -53,7 +53,7 @@ pub struct HashMap<K, V> {
 impl<K, V> HashMap<K, V>
 where
     K: Hash + Eq,
-    V: PartialEq,
+//    V: PartialEq,
 {
     const START_SIZE: usize = 256;//256 just seems like a cool number
     const MAX_LOAD_FACTOR: f32 = 0.5;
