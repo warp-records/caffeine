@@ -111,7 +111,7 @@ where
         }
     }
 
-    pub fn insert(&mut self, key: K, value: V) {
+    pub fn insert(&mut self, key: K, value: V) -> &mut V {
         if self.num_entries as f32 / self.cells.len() as f32 > Self::MAX_LOAD_FACTOR {
             self.resize();
         }
@@ -126,6 +126,11 @@ where
 
         self.cells[idx] = Filled(Entry::new(key, value));
         self.num_entries += 1;
+
+        match &mut self.cells[idx] {
+            Filled(entry) => &mut entry.value,
+            _ => unreachable!(),
+        }
     }
 
     pub fn remove(&mut self, key: K) -> Option<V> {
