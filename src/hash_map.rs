@@ -52,15 +52,20 @@ pub struct HashMap<K, V> {
 
 impl<K, V> HashMap<K, V>
 where
-    K: Hash + Eq + Clone,
-    V: Clone + PartialEq,
+    K: Hash + Eq,
+    V: PartialEq,
 {
     const START_SIZE: usize = 256;//256 just seems like a cool number
     const MAX_LOAD_FACTOR: f32 = 0.5;
 
     pub fn new() -> Self {
         HashMap {
-            cells: vec![Empty; Self::START_SIZE],
+            //Fancy for "cells: vec![Empty; Self::START_SIZE]"
+            //but doesn't require Clone trait
+            cells: std::iter::repeat_with(|| Empty)
+                .take(Self::START_SIZE)
+                .collect::<Vec<_>>(),
+
             num_entries: 0,
         }
     }
@@ -101,8 +106,9 @@ where
     fn resize(&mut self) {
         let mut old_cells = std::mem::take(&mut self.cells);
         //allocate twice as much memory as before
-        self.cells = Vec::with_capacity(old_cells.len()*2);
-        self.cells.resize(self.cells.capacity(), Empty);
+        self.cells = std::iter::repeat_with(|| Empty)
+            .take(old_cells.len()*2)
+            .collect::<Vec<_>>();
         
         for cell in old_cells {
             if let Filled(entry) = cell {
