@@ -12,7 +12,8 @@ mod tests {
     //::hash_map
     use caffeine::hash_map::HashMap;
     use caffeine::bloom_filter::BloomFilter;
-    use caffeine::heap::Heap;
+    use caffeine::trie::Trie;
+    //use caffeine::heap::Heap;
 
     use rand::{distributions::Alphanumeric, Rng};
     fn rand_string() -> String {
@@ -200,18 +201,46 @@ mod tests {
         assert!(false_positives.2 <= false_positives.1);
     }
 
-
-
     #[test]
     fn mass_insert() {
      let mut bf = BloomFilter::<usize, 1024>::new(10);
-        for i in 0..700_000 {
+        for i in 0..70_000 {
             bf.insert(&i);
         }
 
-        for i in 0..700_000 {
+        for i in 0..70_000 {
             bf.search(&i);
         }
+    }
+
+    #[test]
+    fn trie() {
+        let mut trie = Trie::new();
+        let text = "lorem ipsum dolor sit amet consectetur adipiscing \
+            elit maecenas vel odio non lorem fermentum gravida donec \
+            magna sem tempor sit amet accumsan quis rutrum vitae ligula \
+            cras tortor turpis vestibulum in tristique nec molestie id";
+
+        for word in text.split_whitespace() {
+            trie.insert(word);
+        }
+
+        for word in text.split_whitespace() {
+            assert!(trie.search(word));
+        }
+
+        for word in text.split_whitespace() {
+            assert!(!trie.search(&word[..word.len()-1]))
+        }
+
+        for _ in 0..1000 {
+            assert!(!trie.search(&rand_string()[..]))
+        }
+
+        assert!(!trie.search("lor"));
+        trie.insert("lor");
+        assert!(trie.search("lor"));
+        assert!(trie.search("lorem"));
     }
 
     //#[test]

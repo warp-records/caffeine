@@ -6,15 +6,15 @@ pub struct Trie {
 }
 
 impl Trie {
-	fn new() -> Self {
+	pub fn new() -> Self {
 		Self { root: TrieNode::new() }
 	}
 
-	fn insert(&mut self, slice: &str) {
+	pub fn insert(&mut self, slice: &str) {
 		self.root.insert(slice);
 	}
 
-	fn search(&self, slice: &str) -> bool {
+	pub fn search(&self, slice: &str) -> bool {
 		self.root.search(slice)
 	}
 }
@@ -41,7 +41,7 @@ impl TrieNode {
 		if slice.len() == 1 {
 			node.is_tail = true;
 		} else {
-			node.insert(&slice[1..slice.len()]);
+			node.insert(&slice[1..]);
 		} 
 	} 
 
@@ -51,9 +51,9 @@ impl TrieNode {
 		match self.children.get(ch) {
 			Some(node) => {
 				if slice.len() == 1 {
-					return self.is_tail
+					return node.is_tail
 				} else {
-					node.search(&slice[1..slice.len()])
+					node.search(&slice[1..])
 				}
 			},
 			None => false,
