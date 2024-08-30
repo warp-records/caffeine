@@ -42,7 +42,7 @@ impl TrieNode {
 			node.is_tail = true;
 		} else {
 			node.insert(&slice[1..]);
-		} 
+		}
 	} 
 
 	fn search(&self, slice: &str) -> bool {

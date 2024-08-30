@@ -247,7 +247,7 @@ mod tests {
         let mut heap: Heap<usize> = Heap::new(8);
     }
     */
-    //#[test]
+    #[test]
     fn min_heap() {
         let mut heap: Heap<usize> = Heap::new(8);
 
