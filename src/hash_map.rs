@@ -1,4 +1,5 @@
 
+use std::ops::{Index, IndexMut};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::mem;
 use Cell::*;
@@ -75,12 +76,15 @@ where
         self.num_entries = 0;
     }
 
-    fn get_cell(&self, key: K) -> Option<&Cell<K, V>> {
-        get_cell!(self, key, &);
+    fn get_cell(&self, key: &K) -> Option<&Cell<K, V>> {
+        //I suck at macros and didn't feel like figuring out
+        //how to change the function signature, so I'm just
+        //dereferencing a borrow here lol
+        get_cell!(self, *key, &);
     }
 
-    fn get_cell_mut(&mut self, key: K) -> Option<&mut Cell<K, V>> {
-        get_cell!(self, key, &mut);
+    fn get_cell_mut(&mut self, key: &K) -> Option<&mut Cell<K, V>> {
+        get_cell!(self, *key, &mut);
     }
 
     fn get_idx(&self, key: &K) -> usize {
@@ -89,14 +93,14 @@ where
         hasher.finish() as usize % self.cells.len()
     }
 
-    pub fn get(&self, key: K) -> Option<&V> {
+    pub fn get(&self, key: &K) -> Option<&V> {
         match self.get_cell(key) {
             Some(Filled(cell)) => Some(&cell.value),
             _ => None,
         }
     }
 
-    pub fn get_mut(&mut self, key: K) -> Option<&mut V> {
+    pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
         match self.get_cell_mut(key) {
             Some(Filled(cell)) => Some(&mut cell.value),
             _ => None,
@@ -139,8 +143,8 @@ where
         }
     }
 
-    pub fn remove(&mut self, key: K) -> Option<V> {
-        let cell = self.get_cell_mut(key);
+    pub fn remove(&mut self, key: &K) -> Option<V> {
+        let cell = self.get_cell_mut(&key);
 
         match cell {
             Some(Filled(_)) => {
@@ -185,6 +189,28 @@ impl<'a, K, V> Iterator for HashMapIter<'a, K, V> {
     }
 }
 
+/*impl<K, V> Index<&K> for HashMap<K, V>
+where 
+    K: Hash + Eq,
+ {
+    type Output = Option<&V>;
+
+    fn index(&self, key: &K) -> &Self::Output {
+        self.get(key)
+    }
+}
+
+
+impl<K, V> IndexMut<&K> for HashMap<K, V> 
+where 
+    K: Hash + Eq,
+ {
+    type Output = Option<&mut V>;
+
+    fn index_mut(&self, key: &K) -> &mut Self::Output {
+        self.get_mut(key)
+    }
+}*/
 
 /*
 impl IntoIterator for HashMap {

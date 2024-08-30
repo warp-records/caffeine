@@ -1,19 +1,17 @@
-
+use caffeine;
+use rand::prelude::*;
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::mem;
-use rand::prelude::*;
-use caffeine;
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
     //see if there's a way to do this without requiring
     //::hash_map
-    use caffeine::hash_map::HashMap;
     use caffeine::bloom_filter::BloomFilter;
+    use caffeine::hash_map::HashMap;
+    use caffeine::heap::Heap;
     use caffeine::trie::Trie;
-    //use caffeine::heap::Heap;
 
     use rand::{distributions::Alphanumeric, Rng};
     fn rand_string() -> String {
@@ -65,21 +63,21 @@ mod tests {
         }
 
         assert_eq!(
-            hash_table.get_mut("greeting".to_string()),
+            hash_table.get_mut(&"greeting".to_string()),
             Some(&mut "hello world!".to_string())
         );
         assert_eq!(
-            hash_table.get_mut("album".to_string()),
+            hash_table.get_mut(&"album".to_string()),
             Some(&mut "https://open.spotify.com/album/1PQDjdBpHPikAodJqjzm6a".to_string())
         );
         assert_eq!(
-            hash_table.get_mut("SSN".to_string()),
+            hash_table.get_mut(&"SSN".to_string()),
             Some(&mut "574-48-6969".to_string())
         );
 
         //shouldn't have been stored there in the first place...
-        hash_table.remove("SSN".to_string());
-        assert_eq!(hash_table.get_mut("SSN".to_string()), None);
+        hash_table.remove(&"SSN".to_string());
+        assert_eq!(hash_table.get_mut(&"SSN".to_string()), None);
     }
 
     #[test]
@@ -97,77 +95,72 @@ mod tests {
             hash_table.insert(keys[i].clone(), i);
         }
 
-        assert_eq!(hash_table.get_mut(keys[9].clone()), Some(&mut 9));
-        assert_eq!(hash_table.get_mut(keys[1].clone()), Some(&mut 1));
+        assert_eq!(hash_table.get_mut(&keys[9].clone()), Some(&mut 9));
+        assert_eq!(hash_table.get_mut(&keys[1].clone()), Some(&mut 1));
 
         for i in 1..9 {
-            hash_table.remove(keys[i].clone());
+            hash_table.remove(&keys[i].clone());
         }
 
-        assert_eq!(hash_table.get_mut(keys[0].clone()), Some(&mut 0));
-        assert_eq!(hash_table.get_mut(keys[1].clone()), None);
-        assert_eq!(hash_table.get_mut(keys[5].clone()), None);
-        assert_eq!(hash_table.get_mut(keys[9].clone()), Some(&mut 9));
+        assert_eq!(hash_table.get_mut(&keys[0].clone()), Some(&mut 0));
+        assert_eq!(hash_table.get_mut(&keys[1].clone()), None);
+        assert_eq!(hash_table.get_mut(&keys[5].clone()), None);
+        assert_eq!(hash_table.get_mut(&keys[9].clone()), Some(&mut 9));
     }
 
     fn resize() {
-    	todo!();
+        todo!();
     }
 
     #[test]
     fn hashmap_iterators() {
-    	let mut hash_table = HashMap::new();
-    	let mut rng = rand::thread_rng();
+        let mut hash_table = HashMap::new();
+        let mut rng = rand::thread_rng();
 
         for _ in 0..20 {
-        	let val = rng.gen::<usize>();
-            hash_table.insert(val, val-1);
+            let val = rng.gen::<usize>();
+            hash_table.insert(val, val - 1);
         }
 
         let mut iter = hash_table.iter();
 
-		while let Some(entry) = iter.next() { 
-    		assert_eq!(*entry.0, entry.1+1);	
-    	}
-
+        while let Some(entry) = iter.next() {
+            assert_eq!(*entry.0, entry.1 + 1);
+        }
     }
 
     #[test]
     fn bloomfilter_search() {
         let mut bloom_filter = BloomFilter::<&str, 1024>::new(5);
         //they really are that terrible
-        let test_sentence = "AJR are a god awful fucking band"; 
-        
+        let test_sentence = "AJR are a god awful fucking band";
+
         for word in test_sentence.split_whitespace() {
-            bloom_filter.insert(&word); 
+            bloom_filter.insert(&word);
         }
 
         for word in test_sentence.split_whitespace() {
-            assert!(bloom_filter.search(&word)); 
+            assert!(bloom_filter.search(&word));
         }
-
     }
 
     #[test]
     #[allow(non_snake_case)]
     fn bloomfilter_k_bench() {
-
         let test_sentence = "I'm listening to \"Terminal Z\" by Skee Mask and it's
         honestly stunning. It's a very futuristic spacey sounding atmospheric ambient,
-        with lush synths and detuned wacky sounding effects. Touching music truly is 
+        with lush synths and detuned wacky sounding effects. Touching music truly is
         one of the most precious things in life.";
 
         let NUM_ELEMENTS: usize = test_sentence.split_whitespace().count();
         const NUM_CELLS: usize = 512;
         //k = (m/n)*ln(2)
-        let OPTIMAL_K: usize = 
-            (NUM_CELLS as f32 / NUM_ELEMENTS as f32 * 0.69314718056) as usize;
-        let LOW_K: usize = OPTIMAL_K*2;
+        let OPTIMAL_K: usize = (NUM_CELLS as f32 / NUM_ELEMENTS as f32 * 0.69314718056) as usize;
+        let LOW_K: usize = OPTIMAL_K * 2;
         let HIGH_K: usize = OPTIMAL_K / 2;
-        
-        
+
         let mut more_hashes = BloomFilter::<&str, NUM_CELLS>::new(HIGH_K);
-        let mut less_hashes = BloomFilter::<&str, NUM_CELLS>::new(LOW_K); 
+        let mut less_hashes = BloomFilter::<&str, NUM_CELLS>::new(LOW_K);
         let mut optimal_hashes = BloomFilter::<&str, NUM_CELLS>::new(OPTIMAL_K);
 
         for word in test_sentence.split_whitespace() {
@@ -182,28 +175,34 @@ mod tests {
             let word = &rand_string()[..];
 
             if less_hashes.search(&word) {
-                false_positives.0 = false_positives.0 + 1 
+                false_positives.0 = false_positives.0 + 1
             }
 
             if more_hashes.search(&word) {
-                false_positives.1 = false_positives.1 + 1 
+                false_positives.1 = false_positives.1 + 1
             }
 
             if optimal_hashes.search(&word) {
-                false_positives.2 = false_positives.2 + 1 
+                false_positives.2 = false_positives.2 + 1
             }
         }
 
-        println!("{} hash bloom filter false positives: {}", LOW_K, false_positives.0);
+        println!(
+            "{} hash bloom filter false positives: {}",
+            LOW_K, false_positives.0
+        );
         println!("{} hash false positives: {}", HIGH_K, false_positives.1);
-        println!("optimal {} hash false positives: {}", OPTIMAL_K, false_positives.2);
+        println!(
+            "optimal {} hash false positives: {}",
+            OPTIMAL_K, false_positives.2
+        );
         assert!(false_positives.2 <= false_positives.0);
         assert!(false_positives.2 <= false_positives.1);
     }
 
     #[test]
     fn mass_insert() {
-     let mut bf = BloomFilter::<usize, 1024>::new(10);
+        let mut bf = BloomFilter::<usize, 1024>::new(10);
         for i in 0..70_000 {
             bf.insert(&i);
         }
@@ -230,7 +229,7 @@ mod tests {
         }
 
         for word in text.split_whitespace() {
-            assert!(!trie.search(&word[..word.len()-1]))
+            assert!(!trie.search(&word[..word.len() - 1]))
         }
 
         for _ in 0..1000 {
@@ -243,10 +242,42 @@ mod tests {
         assert!(trie.search("lorem"));
     }
 
+    /*#[test]
+    fn heap() {
+        let mut heap: Heap<usize> = Heap::new(8);
+    }
+    */
+    //#[test]
+    fn min_heap() {
+        let mut heap: Heap<usize> = Heap::new(8);
+
+        heap.insert(5);
+        heap.insert(3);
+        heap.insert(8);
+        heap.insert(1);
+
+        assert_eq!(heap.get_min(), Some(&1));
+
+        assert_eq!(heap.pop(), Some(1));
+        assert_eq!(heap.get_min(), Some(&3));
+
+        assert_eq!(heap.pop(), Some(3));
+        assert_eq!(heap.get_min(), Some(&5));
+
+        assert_eq!(heap.pop(), Some(5));
+        assert_eq!(heap.get_min(), Some(&8));
+
+        assert_eq!(heap.pop(), Some(8));
+        assert_eq!(heap.pop(), None);
+    }
+
+    /*#[test]
+    fn stack() {
+        assert(true);
+    }
+    */
     //#[test]
     //fn init_heap() {
     //    let mut heap = Heap<usize>::new();
     //}
-    
 }
-
