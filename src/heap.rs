@@ -45,7 +45,6 @@ impl<T: PartialOrd + std::fmt::Debug> Heap<T> {
             curr_idx = (curr_idx - 1) / 2;
         }
 
-        println!("{:?}\n", self.data);
     }
 
     pub fn pop(&mut self) -> Option<T> {
@@ -82,10 +81,8 @@ impl<T: PartialOrd + std::fmt::Debug> Heap<T> {
             curr_idx = child_idx;
         }
 
-        println!("{:?}\n", self.data);
         //why do I need to do this?
         Some(elem?)
     }
-
 
 }
