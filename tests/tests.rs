@@ -269,6 +269,7 @@ mod tests {
 
         assert_eq!(heap.pop(), Some(8));
         assert_eq!(heap.pop(), None);
+        
     }
 
     /*#[test]
