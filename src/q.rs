@@ -1,5 +1,4 @@
-use crate::heap::Heap;
-use std::mem;
+use crate::heap::*;
 //q.rs
 //tuv
 
@@ -46,12 +45,22 @@ impl<T> PriorityQ<T> {
             None => None,
         }
     }
+
+    pub fn clear(&mut self) {
+        self.heap.clear();
+    }
+
+    pub fn len(&self) -> usize {
+        self.heap.len()
+    }
+
+    //pub fn update_priority(elem: &T, new_priority: usize) {}
 }
 
 //Pray this AI generated code works
 impl<T> PartialOrd for Entry<T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.priority.cmp(&self.priority))
+        Some(self.priority.cmp(&other.priority))
     }
 }
 
@@ -60,3 +69,17 @@ impl<T> PartialEq for Entry<T> {
         self.priority == other.priority
     }
 }
+
+/*
+pub struct PriorityQIter<'a, T> {
+    heap_iter: &'a mut HeapIter<'a, T>,
+}
+
+impl<'a, T: PartialOrd> Iterator for PriorityQIter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.heap_iter.next()
+    }
+}
+ */

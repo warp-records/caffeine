@@ -10,7 +10,8 @@ mod tests {
     //::hash_map
     use caffeine::bloom_filter::BloomFilter;
     use caffeine::hash_map::HashMap;
-    use caffeine::heap::Heap;
+    use caffeine::heap::*;
+    use caffeine::q::PriorityQ;
     use caffeine::trie::Trie;
 
     use rand::{distributions::Alphanumeric, Rng};
@@ -269,7 +270,59 @@ mod tests {
 
         assert_eq!(heap.pop(), Some(8));
         assert_eq!(heap.pop(), None);
-        
+    }
+
+    #[test]
+    fn test_priority_queue() {
+        let mut pq = PriorityQ::new();
+
+        assert!(pq.is_empty());
+        assert_eq!(pq.len(), 0);
+
+        pq.push("task1", 1);
+        assert_eq!(pq.len(), 1);
+
+        pq.push("task2", 5);
+        assert_eq!(pq.len(), 2);
+
+        pq.push("task3", 3);
+        assert_eq!(pq.len(), 3);
+
+        assert!(!pq.is_empty());
+        assert_eq!(pq.peek(), Some((&"task1", 1)));
+
+        assert_eq!(pq.pop(), Some(("task1", 1)));
+        assert_eq!(pq.len(), 2);
+        assert_eq!(pq.peek(), Some((&"task3", 3)));
+
+        assert_eq!(pq.pop(), Some(("task3", 3)));
+        assert_eq!(pq.len(), 1);
+
+        assert_eq!(pq.pop(), Some(("task2", 5)));
+        assert!(pq.is_empty());
+        assert_eq!(pq.len(), 0);
+
+        // Test the clear method
+        pq.push("task4", 2);
+        assert_eq!(pq.len(), 1);
+
+        pq.clear();
+        assert!(pq.is_empty());
+        assert_eq!(pq.len(), 0);
+    }
+
+    #[test]
+    pub fn test_iterator() {
+        let mut heap = Heap::new(4);
+        heap.insert(5);
+        heap.insert(3);
+        heap.insert(8);
+        heap.insert(1);
+
+        let mut elements: Vec<_> = heap.iter().collect();
+        elements.sort(); // Sort the elements to check for any order
+
+        assert_eq!(elements, vec![&1, &3, &5, &8]);
     }
 
     /*#[test]

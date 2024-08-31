@@ -46,10 +46,14 @@ impl<T: PartialOrd> Heap<T> {
         }
     }
 
-    /*pub fn clear(&mut self) {
+    pub fn clear(&mut self) {
         //might be suboptimal, check if this is the right way to do it later
-        self.data = std::iter::from_fn(|| Some(None)).take(data.len()).collect();
-    }*/
+        self.data = std::iter::from_fn(|| Some(None))
+            .take(self.data.len())
+            .collect();
+
+        self.node_count = 0;
+    }
 
     pub fn pop(&mut self) -> Option<T> {
         if self.node_count == 0 {
@@ -92,5 +96,32 @@ impl<T: PartialOrd> Heap<T> {
 
     pub fn len(&self) -> usize {
         self.node_count
+    }
+
+    pub fn iter(&self) -> HeapIter<T> {
+        HeapIter {
+            heap: &self,
+            idx: 0,
+        }
+    }
+}
+
+//"arbitrary" order, as is with the offical
+//PQ implementation
+pub struct HeapIter<'a, T> {
+    heap: &'a Heap<T>,
+    idx: usize,
+}
+
+impl<'a, T: PartialOrd> Iterator for HeapIter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx == self.heap.len() {
+            return None;
+        } else {
+            self.idx += 1;
+            Some(self.heap.data[self.idx - 1].as_ref().unwrap())
+        }
     }
 }

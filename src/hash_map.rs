@@ -1,5 +1,3 @@
-
-use std::ops::{Index, IndexMut};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::mem;
 use Cell::*;
@@ -18,7 +16,6 @@ macro_rules! get_cell {
         }
     };
 }
-
 
 #[derive(Clone)]
 pub struct Entry<K, V> {
@@ -43,7 +40,9 @@ pub enum Cell<K, V> {
 }
 
 impl<K, V> Default for Cell<K, V> {
-    fn default() -> Cell<K, V> { Empty }
+    fn default() -> Cell<K, V> {
+        Empty
+    }
 }
 
 pub struct HashMap<K, V> {
@@ -54,9 +53,9 @@ pub struct HashMap<K, V> {
 impl<K, V> HashMap<K, V>
 where
     K: Hash + Eq,
-//    V: PartialEq,
+    //    V: PartialEq,
 {
-    const START_SIZE: usize = 256;//256 just seems like a cool number
+    const START_SIZE: usize = 256; //256 just seems like a cool number
     const MAX_LOAD_FACTOR: f32 = 0.5;
 
     pub fn new() -> Self {
@@ -111,9 +110,9 @@ where
         let old_cells = std::mem::take(&mut self.cells);
         //allocate twice as much memory as before
         self.cells = std::iter::repeat_with(|| Empty)
-            .take(old_cells.len()*2)
+            .take(old_cells.len() * 2)
             .collect::<Vec<_>>();
-        
+
         for cell in old_cells {
             if let Filled(entry) = cell {
                 self.insert(entry.key, entry.value);
@@ -162,7 +161,6 @@ where
             idx: 0,
         }
     }
-
 }
 
 pub struct HashMapIter<'a, K, V> {
@@ -174,9 +172,7 @@ impl<'a, K, V> Iterator for HashMapIter<'a, K, V> {
     type Item = (&'a K, &'a V);
 
     fn next(&mut self) -> Option<(&'a K, &'a V)> {
-
         while self.idx < self.hash_table.cells.len() {
-
             if let Filled(entry) = &self.hash_table.cells[self.idx] {
                 self.idx = self.idx + 1;
                 return Some((&entry.key, &entry.value));
@@ -185,12 +181,12 @@ impl<'a, K, V> Iterator for HashMapIter<'a, K, V> {
             self.idx = self.idx + 1;
         }
 
-        None 
+        None
     }
 }
 
 /*impl<K, V> Index<&K> for HashMap<K, V>
-where 
+where
     K: Hash + Eq,
  {
     type Output = Option<&V>;
@@ -201,8 +197,8 @@ where
 }
 
 
-impl<K, V> IndexMut<&K> for HashMap<K, V> 
-where 
+impl<K, V> IndexMut<&K> for HashMap<K, V>
+where
     K: Hash + Eq,
  {
     type Output = Option<&mut V>;
