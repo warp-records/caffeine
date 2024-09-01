@@ -1,9 +1,10 @@
 [package]
 # I CAN'T BELIEVE I OWN THE CAFFEINE CRATE!!!! I feel so cool
 name = "caffeine"
-version = "0.1.3"
+authors = ["MEEEEEEEEEE!!"]
+version = "0.1.4"
 edition = "2021"
-description = "Simple hash table implementation using open addressing. Written for use with my crafting interpeters tutorial implementation."
+description = "Collection of data structures I'm writing for fun. Originally written for use with my crafting interpeters tutorial implementation."
 license-file = "LICENSE.md"
 
 [dependencies]
@@ -11,5 +12,9 @@ rand = "0.8.5"
 
 # It's pretty fitting that I own this crate bc I am
 # a literal junkie for Caffeine
+
+# Really hope a future potential employer doesn't see
+# my lunacy here and I miss out on a good job because
+# I decided to go fucking crazy here
 
 # Hope you have fun using my crate!
