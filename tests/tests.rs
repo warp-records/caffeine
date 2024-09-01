@@ -312,6 +312,20 @@ mod tests {
     }
 
     #[test]
+    fn test_priority_q_iter() {
+        let mut pq = PriorityQ::new();
+        pq.push("low priority", 5);
+        pq.push("medium priority", 3);
+        pq.push("high priority", 1);
+
+	let mut iter = pq.iter();
+        let priorities: Vec<_> = iter.collect();
+
+        assert_eq!(priorities.len(), 3);
+        assert_eq!(priorities[0].0, &"high priority");
+    }
+
+    #[test]
     pub fn test_iterator() {
         let mut heap = Heap::new(4);
         heap.insert(5);
@@ -324,14 +338,4 @@ mod tests {
 
         assert_eq!(elements, vec![&1, &3, &5, &8]);
     }
-
-    /*#[test]
-    fn stack() {
-        assert(true);
-    }
-    */
-    //#[test]
-    //fn init_heap() {
-    //    let mut heap = Heap<usize>::new();
-    //}
 }

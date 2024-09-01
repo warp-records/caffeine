@@ -1,6 +1,3 @@
-//use std::cell::RefCell;
-//use std::marker::PhantomData;
-//use std::mem::swap;
 
 //Min heap
 pub struct Heap<T> {
@@ -35,11 +32,12 @@ impl<T: PartialOrd> Heap<T> {
             self.data.resize_with(self.data.len() * 2, || None);
         }
 
-        while self.data[curr_idx] < self.data[(curr_idx - 1) / 2] {
+
+	while self.data[curr_idx] < self.data[(curr_idx - 1) / 2] {
             self.data.swap(curr_idx, (curr_idx - 1) / 2);
 
             //prevent underflow
-            if curr_idx == 1 {
+            if curr_idx <= 2 {
                 break;
             }
             curr_idx = (curr_idx - 1) / 2;

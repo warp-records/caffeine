@@ -54,6 +54,12 @@ impl<T> PriorityQ<T> {
         self.heap.len()
     }
 
+    pub fn iter(&self) -> PriorityQIter<T> {
+        PriorityQIter {
+            heap_iter: self.heap.iter(),
+        }
+    }
+
     //pub fn update_priority(elem: &T, new_priority: usize) {}
 }
 
@@ -70,16 +76,18 @@ impl<T> PartialEq for Entry<T> {
     }
 }
 
-/*
 pub struct PriorityQIter<'a, T> {
-    heap_iter: &'a mut HeapIter<'a, T>,
+    heap_iter: HeapIter<'a, Entry<T>>,
 }
 
 impl<'a, T: PartialOrd> Iterator for PriorityQIter<'a, T> {
-    type Item = &'a T;
+    type Item = (&'a T, usize);
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.heap_iter.next()
+        match self.heap_iter.next() {
+            Some(item) => Some((&item.elem, item.priority)),
+            None => None,
+        }
     }
 }
- */
+
