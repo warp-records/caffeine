@@ -366,4 +366,21 @@ mod tests {
         pq.remove(&"task3");
         assert!(pq.is_empty());
     }
+
+    #[test]
+    fn test_priority_queue_update_priority() {
+        let mut pq = PriorityQ::new();
+
+        pq.push("task1", 1);
+        pq.push("task2", 5);
+        pq.push("task3", 3);
+        assert_eq!(pq.len(), 3);
+
+        pq.update_priority(&"task2", 0);
+        assert_eq!(pq.peek(), Some((&"task2", 0)));
+        assert_eq!(pq.len(), 3);
+
+        pq.pop();
+        assert_eq!(pq.peek(), Some((&"task1", 1)));
+    }
 }

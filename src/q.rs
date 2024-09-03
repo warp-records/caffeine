@@ -9,6 +9,12 @@ struct Entry<T> {
     priority: usize,
 }
 
+impl<T> Entry<T> {
+    pub fn new(elem: T, priority: usize) -> Self {
+        Entry { elem, priority }
+    }
+}
+
 pub struct PriorityQ<T> {
     heap: Heap<Entry<T>>,
 }
@@ -26,10 +32,7 @@ impl<T: PartialOrd> PriorityQ<T> {
     }
 
     pub fn push(&mut self, elem: T, priority: usize) {
-        self.heap.insert(Entry {
-            elem: elem,
-            priority: priority,
-        });
+        self.heap.insert(Entry::new(elem, priority));
     }
 
     pub fn pop(&mut self) -> Option<(T, usize)> {
@@ -73,22 +76,14 @@ impl<T: PartialOrd> PriorityQ<T> {
             heap_iter: self.heap.iter_mut(),
         }
     }
+    */
 
-    pub fn update_priority(&mut self, elem: &T, new_priority: usize)
-    where
-        T: PartialEq,
-    {
-        let mut iter = self.iter();
-
-        for (curr_elem, _) in iter {
-            if curr_elem == elem {
-                elem = new_priority;
-                break;
-            }
+    //consider properly optimizing later
+    pub fn update_priority(&mut self, elem: &T, new_priority: usize) {
+        if let Some(entry) = self.remove(elem) {
+            self.push(entry.0, new_priority);
         }
     }
-
-    */
 }
 
 //Pray this AI generated code works
