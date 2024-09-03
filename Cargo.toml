@@ -2,7 +2,7 @@
 # I CAN'T BELIEVE I OWN THE CAFFEINE CRATE!!!! I feel so cool
 name = "caffeine"
 authors = ["MEEEEEEEEEE!!"]
-version = "0.1.4"
+version = "0.2.0"
 edition = "2021"
 description = "Collection of data structures I'm writing for fun. Originally written for use with my crafting interpeters tutorial implementation."
 license-file = "LICENSE.md"
