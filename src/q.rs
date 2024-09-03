@@ -79,9 +79,20 @@ impl<T: PartialOrd> PriorityQ<T> {
     */
 
     //consider properly optimizing later
-    pub fn update_priority(&mut self, elem: &T, new_priority: usize) {
+    pub fn update_priority(&mut self, elem: &T, new_priority: usize) -> Option<usize> {
         if let Some(entry) = self.remove(elem) {
             self.push(entry.0, new_priority);
+            //the standard library PQ returns the old priority,
+            //and I think that's a clever choice
+            return Some(entry.1);
+        }
+
+        None
+    }
+
+    pub fn merge(&mut self, other: &mut Self) {
+        while let Some(other_entry) = other.pop() {
+            self.push(other_entry.0, other_entry.1);
         }
     }
 }

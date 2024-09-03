@@ -248,6 +248,9 @@ mod tests {
         let mut heap: Heap<usize> = Heap::new(8);
     }
     */
+
+    //most test cases from here down were generated
+    //by ChatGPT-4o-mini
     #[test]
     fn min_heap() {
         let mut heap: Heap<usize> = Heap::new(8);
@@ -382,5 +385,24 @@ mod tests {
 
         pq.pop();
         assert_eq!(pq.peek(), Some((&"task1", 1)));
+    }
+
+    #[test]
+    fn test_priority_queue_merge() {
+        let mut pq1 = PriorityQ::new();
+        pq1.push("task1", 1);
+        pq1.push("task2", 3);
+
+        let mut pq2 = PriorityQ::new();
+        pq2.push("task3", 2);
+        pq2.push("task4", 4);
+
+        pq1.merge(&mut pq2);
+
+        assert_eq!(pq1.len(), 4);
+        assert_eq!(pq1.pop(), Some(("task1", 1)));
+        assert_eq!(pq1.pop(), Some(("task3", 2)));
+        assert_eq!(pq1.pop(), Some(("task2", 3)));
+        assert_eq!(pq1.pop(), Some(("task4", 4)));
     }
 }
