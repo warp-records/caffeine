@@ -55,15 +55,23 @@ impl<T: PartialOrd> Heap<T> {
         self.remove_idx(0)
     }
 
-    pub fn remove(&mut self, elem: &T) -> Option<T> {
+    //needed for priority queue
+    pub fn remove_pred<F>(&mut self, predicate: F) -> Option<T>
+    where
+        F: Fn(&T) -> bool,
+    {
         let len = self.data.len();
         for i in 0..len {
-            if self.data[i].as_ref().unwrap() == elem {
+            if predicate(self.data[i].as_ref().unwrap()) {
                 return self.remove_idx(i);
             }
         }
 
         None
+    }
+
+    pub fn remove(&mut self, elem: &T) -> Option<T> {
+        self.remove_pred(|other| elem == other)
     }
 
     //fix later

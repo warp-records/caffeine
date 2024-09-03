@@ -345,4 +345,25 @@ mod tests {
         elements.sort(); // Sort the elements to check for any order
         assert_eq!(elements, vec![&3, &5, &8]);
     }
+
+    #[test]
+    fn test_priority_queue_remove() {
+        let mut pq = PriorityQ::new();
+
+        pq.push("task1", 1);
+        pq.push("task2", 5);
+        pq.push("task3", 3);
+        assert_eq!(pq.len(), 3);
+
+        pq.remove(&"task2");
+        assert_eq!(pq.len(), 2);
+        assert_eq!(pq.peek(), Some((&"task1", 1)));
+
+        pq.remove(&"task1");
+        assert_eq!(pq.len(), 1);
+        assert_eq!(pq.peek(), Some((&"task3", 3)));
+
+        pq.remove(&"task3");
+        assert!(pq.is_empty());
+    }
 }

@@ -39,6 +39,13 @@ impl<T: PartialOrd> PriorityQ<T> {
         }
     }
 
+    pub fn remove(&mut self, elem: &T) -> Option<(T, usize)> {
+        match self.heap.remove_pred(|curr| &curr.elem == elem) {
+            Some(entry) => Some((entry.elem, entry.priority)),
+            None => None,
+        }
+    }
+
     pub fn peek(&self) -> Option<(&T, usize)> {
         match self.heap.get_min() {
             Some(ref entry) => Some((&entry.elem, entry.priority)),
