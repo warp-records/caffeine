@@ -318,7 +318,7 @@ mod tests {
         pq.push("medium priority", 3);
         pq.push("high priority", 1);
 
-	let mut iter = pq.iter();
+        let mut iter = pq.iter();
         let priorities: Vec<_> = iter.collect();
 
         assert_eq!(priorities.len(), 3);
@@ -329,13 +329,20 @@ mod tests {
     pub fn test_iterator() {
         let mut heap = Heap::new(4);
         heap.insert(5);
+        heap.insert(7);
         heap.insert(3);
         heap.insert(8);
         heap.insert(1);
 
         let mut elements: Vec<_> = heap.iter().collect();
         elements.sort(); // Sort the elements to check for any order
+        assert_eq!(elements, vec![&1, &3, &5, &7, &8]);
 
-        assert_eq!(elements, vec![&1, &3, &5, &8]);
+        heap.remove(&7);
+        heap.remove(&1);
+
+        elements = heap.iter().collect();
+        elements.sort(); // Sort the elements to check for any order
+        assert_eq!(elements, vec![&3, &5, &8]);
     }
 }

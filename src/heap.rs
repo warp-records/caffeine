@@ -1,4 +1,3 @@
-
 //Min heap
 pub struct Heap<T> {
     data: Vec<Option<T>>,
@@ -32,8 +31,7 @@ impl<T: PartialOrd> Heap<T> {
             self.data.resize_with(self.data.len() * 2, || None);
         }
 
-
-	while self.data[curr_idx] < self.data[(curr_idx - 1) / 2] {
+        while self.data[curr_idx] < self.data[(curr_idx - 1) / 2] {
             self.data.swap(curr_idx, (curr_idx - 1) / 2);
 
             //prevent underflow
@@ -54,18 +52,33 @@ impl<T: PartialOrd> Heap<T> {
     }
 
     pub fn pop(&mut self) -> Option<T> {
+        self.remove_idx(0)
+    }
+
+    pub fn remove(&mut self, elem: &T) -> Option<T> {
+        let len = self.data.len();
+        for i in 0..len {
+            if self.data[i].as_ref().unwrap() == elem {
+                return self.remove_idx(i);
+            }
+        }
+
+        None
+    }
+
+    //fix later
+    fn remove_idx(&mut self, mut r_idx: usize) -> Option<T> {
         if self.node_count == 0 {
             return None;
         }
+        let elem = std::mem::take(&mut self.data[r_idx]);
 
-        let mut curr_idx = 0;
-        let elem = std::mem::take(&mut self.data[0]);
-
-        self.data.swap(0, self.node_count - 1);
+        let mut idx = 0;
+        self.data.swap(r_idx, self.node_count - 1);
         self.node_count -= 1;
 
         loop {
-            let left_idx = curr_idx * 2 + 1;
+            let left_idx = idx * 2 + 1;
             let right_idx = left_idx + 1;
 
             if self.data[left_idx] == None && self.data[right_idx] == None {
@@ -79,13 +92,13 @@ impl<T: PartialOrd> Heap<T> {
                     right_idx
                 };
 
-            if !(self.data[child_idx] < self.data[curr_idx]) {
+            if !(self.data[child_idx] <= self.data[idx]) {
                 break;
             }
 
-            self.data.swap(curr_idx, child_idx);
+            self.data.swap(idx, child_idx);
 
-            curr_idx = child_idx;
+            idx = child_idx;
         }
 
         //why do I need to do this?
@@ -102,6 +115,8 @@ impl<T: PartialOrd> Heap<T> {
             idx: 0,
         }
     }
+
+    //pub fn heapify(&mut self) {}
 }
 
 //"arbitrary" order, as is with the offical

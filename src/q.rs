@@ -13,7 +13,7 @@ pub struct PriorityQ<T> {
     heap: Heap<Entry<T>>,
 }
 
-impl<T> PriorityQ<T> {
+impl<T: PartialOrd> PriorityQ<T> {
     pub fn new() -> Self {
         PriorityQ {
             //reconsider this arbitrary start size
@@ -60,7 +60,28 @@ impl<T> PriorityQ<T> {
         }
     }
 
-    //pub fn update_priority(elem: &T, new_priority: usize) {}
+    /*
+    pub fn iter_mut(&mut self) -> PriorityQMutIter<T> {
+        PriorityQMutIter {
+            heap_iter: self.heap.iter_mut(),
+        }
+    }
+
+    pub fn update_priority(&mut self, elem: &T, new_priority: usize)
+    where
+        T: PartialEq,
+    {
+        let mut iter = self.iter();
+
+        for (curr_elem, _) in iter {
+            if curr_elem == elem {
+                elem = new_priority;
+                break;
+            }
+        }
+    }
+
+    */
 }
 
 //Pray this AI generated code works
@@ -76,7 +97,7 @@ impl<T> PartialEq for Entry<T> {
     }
 }
 
-pub struct PriorityQIter<'a, T> {
+pub struct PriorityQIter<'a, T: PartialOrd> {
     heap_iter: HeapIter<'a, Entry<T>>,
 }
 
@@ -90,4 +111,3 @@ impl<'a, T: PartialOrd> Iterator for PriorityQIter<'a, T> {
         }
     }
 }
-
