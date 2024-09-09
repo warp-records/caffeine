@@ -23,7 +23,7 @@ impl<T: PartialOrd> PriorityQ<T> {
     pub fn new() -> Self {
         PriorityQ {
             //reconsider this arbitrary start size
-            heap: Heap::new(8),
+            heap: Heap::new(16),
         }
     }
 

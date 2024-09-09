@@ -75,7 +75,7 @@ impl<T: PartialOrd> Heap<T> {
     }
 
     //fix later
-    fn remove_idx(&mut self, mut r_idx: usize) -> Option<T> {
+    fn remove_idx(&mut self, r_idx: usize) -> Option<T> {
         if self.node_count == 0 {
             return None;
         }
